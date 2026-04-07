@@ -106,7 +106,8 @@ Keep it concise (3-5 steps) and include time allocations for each step.`;
   } catch (error) {
     // If anything goes wrong, log the error and show user-friendly message
     console.error('Error:', error);
-    document.getElementById('routineOutput').textContent = 'Sorry, there was an error generating your routine. Please try again.';
+    document.getElementById('result').classList.remove('hidden');
+    document.getElementById('routineOutput').textContent = `Sorry, there was an error generating your routine: ${error.message}`;
   } finally {
     // Always reset the button back to its original state using innerHTML to render the icon
     button.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Generate My Routine';
