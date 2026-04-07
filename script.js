@@ -95,7 +95,11 @@ Keep it concise (3-5 steps) and include time allocations for each step.`;
     // Convert API response to JSON and get the generated routine
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.error?.message || 'Request failed');
+      const apiError = data.error?.message || data.detail || 'Request failed';
+      if (response.status === 401 || /unauthorized|invalid|api key/i.test(apiError)) {
+        throw new Error('Authentication failed. Please check your Mistral API key in secrets.js.');
+      }
+      throw new Error(apiError);
     }
     const routine = data.choices?.[0]?.message?.content || 'No routine was returned. Please try again.';
     
