@@ -52,8 +52,8 @@ document.getElementById('routineForm').addEventListener('submit', async (e) => {
     activities.push(checkbox.value);
   });
   
-  // Create prompt for personalized routine
-  const prompt = `Please create a personalized ${timeOfDay.toLowerCase()} routine for me with the following parameters:
+  // Create a user prompt for a short personalized routine
+  const userPrompt = `Please create a short personalized ${timeOfDay.toLowerCase()} routine for me with the following parameters:
 - Focus area: ${focusArea}
 - Time available: ${timeAvailable} minutes
 - Energy level: ${energyLevel}
@@ -66,7 +66,7 @@ Please provide a structured, step-by-step routine that:
 4. Focuses on ${focusArea.toLowerCase()} outcomes
 5. Is suitable for ${timeOfDay.toLowerCase()} implementation
 
-Format the routine with time allocations for each step.`;
+Keep it concise (3-5 steps) and include time allocations for each step.`;
 
   // Find the submit button and update its appearance to show loading state
   const button = document.querySelector('button[type="submit"]');
@@ -74,27 +74,30 @@ Format the routine with time allocations for each step.`;
   button.disabled = true;
   
   try {    
-    // Make the API call to OpenAI's chat completions endpoint
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Make the API call to Mistral's chat completions endpoint
+    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'mistral-small-latest',
         messages: [      
           { role: 'system', content: `You are a helpful assistant that creates quick, focused daily routines. Always keep routines short, realistic, and tailored to the user's preferences.` },
-          { role: 'user', content: prompt }
+          { role: 'user', content: userPrompt }
         ],
         temperature: 0.7,
-        max_completion_tokens: 500
+        max_tokens: 500
       })
     });
     
     // Convert API response to JSON and get the generated routine
     const data = await response.json();
-    const routine = data.choices[0].message.content;
+    if (!response.ok) {
+      throw new Error(data.error?.message || 'Request failed');
+    }
+    const routine = data.choices?.[0]?.message?.content || 'No routine was returned. Please try again.';
     
     // Show the result section and display the routine
     document.getElementById('result').classList.remove('hidden');
